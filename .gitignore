@@ -6,3 +6,6 @@ __pycache__
 .tox
 server/target
 MANIFEST
+server/artifacts/cattle.jar
+rancher-1.6-cattle/
+

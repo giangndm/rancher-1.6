@@ -9,11 +9,20 @@ if [ ! -e target/.done ]; then
     touch target/.done
 fi
 
+if [ -f ../rancher-1.6-cattle/dist/artifacts/cattle.jar ]; then
+    echo "Copying custom built cattle.jar..."
+    cp ../rancher-1.6-cattle/dist/artifacts/cattle.jar artifacts/cattle.jar
+else
+    echo "Error: Custom cattle.jar not found at ../rancher-1.6-cattle/dist/artifacts/cattle.jar"
+    exit 1
+fi
+
 TAG=${TAG:-$(awk '/ENV CATTLE_RANCHER_SERVER_VERSION/{print $3}' Dockerfile)}
 REPO=${REPO:-$(awk '/ENV CATTLE_RANCHER_SERVER_IMAGE/{print $3}' Dockerfile)}
 IMAGE=${REPO}:${TAG}
 
 docker build -t "${IMAGE}" .
+
 
 cat > Dockerfile.master << EOF
 FROM ${IMAGE}
