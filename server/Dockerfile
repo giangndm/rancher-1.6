@@ -42,9 +42,9 @@ EXPOSE 8080
 ENV CATTLE_HOST_API_PROXY_MODE embedded
 
 # Environment variables commonly updated when performing a release
-ENV CATTLE_RANCHER_SERVER_VERSION v1.6.32
+ENV CATTLE_RANCHER_SERVER_VERSION v1.6.33
 ENV DEFAULT_CATTLE_API_UI_INDEX //releases.rancher.com/ui/1.6.52
-ENV CATTLE_CATTLE_VERSION v0.183.85
+ENV CATTLE_CATTLE_VERSION v0.183.86
 ENV CATTLE_RANCHER_CLI_VERSION v0.6.14
 ENV CATTLE_RANCHER_COMPOSE_VERSION v0.12.5
 ENV DEFAULT_CATTLE_CATALOG_URL='{"catalogs":{"community":{"url":"https://github.com/rancher/community-catalog.git","branch":"master"},"library":{"url":"https://github.com/rancher/rancher-catalog.git","branch":"${RELEASE}"}}}'
@@ -64,11 +64,11 @@ COPY artifacts/cattle.jar /usr/share/cattle/
 
 RUN cd / && for i in $(ls /s6-statics/*static.tar.gz);do tar -C /usr -zxvf $i;done && rm -rf /s6-statics/*static.tar.gz && \
     mkdir -p $CATTLE_HOME && \
-    /usr/share/cattle/cattle.sh extract && \
+    CATTLE_DB_CATTLE_DATABASE=h2 CATTLE_DB_MIGRATION_SKIP=true /usr/share/cattle/cattle.sh extract && \
     curl -sL https:${DEFAULT_CATTLE_API_UI_INDEX}.tar.gz | tar xvzf - -C /usr/share/cattle/war --strip-components=1 && \
     mkdir -p /usr/share/cattle/war/api-ui && \
     curl -sL https:${CATTLE_API_UI_URL}.tar.gz | tar xvzf - -C /usr/share/cattle/war/api-ui --strip-components=1 && \
-    /usr/share/cattle/install_cattle_binaries && \
+    CATTLE_DB_CATTLE_DATABASE=h2 CATTLE_DB_MIGRATION_SKIP=true /usr/share/cattle/install_cattle_binaries && \
     curl -sL https://github.com/prometheus/graphite_exporter/releases/download/v0.2.0/graphite_exporter-0.2.0.linux-amd64.tar.gz | tar -xzv -C /usr/bin/ --strip-components=1
 RUN cd $CATTLE_HOME && \
     echo "$DEFAULT_CATTLE_CATALOG_URL" | sed 's/${RELEASE}/'$(echo $CATTLE_RANCHER_SERVER_VERSION | sed -E 's/(v[0-9]+\.[0-9]+).*/\1-release/')/g > repo.json && \
