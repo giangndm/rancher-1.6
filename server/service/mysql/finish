@@ -1,3 +1,0 @@
-#!/bin/bash
-
-/usr/bin/s6-svscanctl -t /service

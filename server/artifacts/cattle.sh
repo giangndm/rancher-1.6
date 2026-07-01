@@ -68,7 +68,6 @@ setup_mysql()
 
         if [ -z "$CATTLE_DB_CATTLE_MYSQL_HOST" ]; then
             export CATTLE_DB_CATTLE_MYSQL_HOST="localhost"
-            /usr/share/cattle/mysql.sh
         fi
 
         if [ -z "$CATTLE_DB_CATTLE_MYSQL_PORT" ]; then
