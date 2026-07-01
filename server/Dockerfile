@@ -24,6 +24,14 @@ RUN rm -f /etc/apt/sources.list.d/zulu.list && \
 # Make US export policy local policy
 RUN cp /usr/lib/jvm/zulu-8-amd64/jre/lib/security/US_export_policy.jar /usr/lib/jvm/zulu-8-amd64/jre/lib/security/local_policy.jar
 
+# Import Let's Encrypt certificates to resolve PKIX certificate validation failures
+RUN curl -skL -o /tmp/isrgrootx1.pem https://letsencrypt.org/certs/isrgrootx1.pem && \
+    /usr/lib/jvm/zulu-8-amd64/bin/keytool -import -trustcacerts -alias isrgrootx1 -file /tmp/isrgrootx1.pem -keystore /usr/lib/jvm/zulu-8-amd64/jre/lib/security/cacerts -storepass changeit -noprompt && \
+    curl -skL -o /tmp/isrgrootx2.pem https://letsencrypt.org/certs/isrg-root-x2.pem && \
+    /usr/lib/jvm/zulu-8-amd64/bin/keytool -import -trustcacerts -alias isrgrootx2 -file /tmp/isrgrootx2.pem -keystore /usr/lib/jvm/zulu-8-amd64/jre/lib/security/cacerts -storepass changeit -noprompt && \
+    rm -f /tmp/isrgrootx1.pem /tmp/isrgrootx2.pem
+
+
 COPY bin/* /usr/bin/
 
 ENV CATTLE_HOME /var/lib/cattle
@@ -42,9 +50,9 @@ EXPOSE 8080
 ENV CATTLE_HOST_API_PROXY_MODE embedded
 
 # Environment variables commonly updated when performing a release
-ENV CATTLE_RANCHER_SERVER_VERSION v1.6.34
+ENV CATTLE_RANCHER_SERVER_VERSION v1.6.35
 ENV DEFAULT_CATTLE_API_UI_INDEX //releases.rancher.com/ui/1.6.52
-ENV CATTLE_CATTLE_VERSION v0.183.87
+ENV CATTLE_CATTLE_VERSION v0.183.88
 ENV CATTLE_RANCHER_CLI_VERSION v0.6.14
 ENV CATTLE_RANCHER_COMPOSE_VERSION v0.12.5
 ENV DEFAULT_CATTLE_CATALOG_URL='{"catalogs":{"community":{"url":"https://github.com/rancher/community-catalog.git","branch":"master"},"library":{"url":"https://github.com/rancher/rancher-catalog.git","branch":"${RELEASE}"}}}'
