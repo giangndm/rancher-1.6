@@ -7,8 +7,6 @@ on:
       - main
     tags:
       - 'v*'
-  release:
-    types: [published, created]
   workflow_dispatch:
 
 jobs:
@@ -23,12 +21,10 @@ jobs:
 
       - name: Inject Server Version
         run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            VERSION="${{ github.event.release.tag_name }}"
-          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
             VERSION="${{ github.ref_name }}"
           else
-            VERSION="latest"
+            VERSION="dev"
           fi
           echo "Setting CATTLE_RANCHER_SERVER_VERSION to $VERSION"
           sed -i "s|ENV CATTLE_RANCHER_SERVER_VERSION.*|ENV CATTLE_RANCHER_SERVER_VERSION ${VERSION}|" server/Dockerfile
@@ -69,7 +65,6 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/rancher-server
           tags: |
             type=ref,event=tag
-            type=raw,value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
             type=raw,value=dev,enable=${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
 
       - name: Extract metadata for Master Image
@@ -79,7 +74,6 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/rancher-server
           tags: |
             type=ref,event=tag,suffix=-master
-            type=raw,value=${{ github.event.release.tag_name }}-master,enable=${{ github.event_name == 'release' }}
             type=raw,value=dev-master,enable=${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
 
       - name: Build and push Main Docker image
@@ -95,9 +89,7 @@ jobs:
       - name: Generate Dockerfile.master
         run: |
           # Use the newly built main image as the base for the master-flavored build
-          if [ "${{ github.event_name }}" = "release" ]; then
-            BASE_TAG="${{ github.event.release.tag_name }}"
-          elif [ "${{ github.ref_type }}" = "tag" ]; then
+          if [ "${{ github.ref_type }}" = "tag" ]; then
             BASE_TAG="${{ github.ref_name }}"
           else
             BASE_TAG="dev"
