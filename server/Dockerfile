@@ -50,9 +50,9 @@ EXPOSE 8080
 ENV CATTLE_HOST_API_PROXY_MODE embedded
 
 # Environment variables commonly updated when performing a release
-ENV CATTLE_RANCHER_SERVER_VERSION v1.6.35
+ENV CATTLE_RANCHER_SERVER_VERSION v1.6.36
 ENV DEFAULT_CATTLE_API_UI_INDEX //releases.rancher.com/ui/1.6.52
-ENV CATTLE_CATTLE_VERSION v0.183.88
+ENV CATTLE_CATTLE_VERSION v0.183.89
 ENV CATTLE_RANCHER_CLI_VERSION v0.6.14
 ENV CATTLE_RANCHER_COMPOSE_VERSION v0.12.5
 ENV DEFAULT_CATTLE_CATALOG_URL='{"catalogs":{"community":{"url":"https://github.com/rancher/community-catalog.git","branch":"master"},"library":{"url":"https://github.com/rancher/rancher-catalog.git","branch":"${RELEASE}"}}}'
