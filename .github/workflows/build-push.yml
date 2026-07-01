@@ -7,6 +7,9 @@ on:
       - main
     tags:
       - 'v*'
+  release:
+    types: [published, created]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -17,6 +20,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Inject Server Version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            VERSION="latest"
+          fi
+          echo "Setting CATTLE_RANCHER_SERVER_VERSION to $VERSION"
+          sed -i "s|ENV CATTLE_RANCHER_SERVER_VERSION.*|ENV CATTLE_RANCHER_SERVER_VERSION ${VERSION}|" server/Dockerfile
 
       - name: Get Cattle Version
         id: cattle-version
@@ -54,6 +69,7 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/rancher-server
           tags: |
             type=ref,event=tag
+            type=ref,event=release
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
 
       - name: Extract metadata for Master Image
@@ -63,6 +79,7 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/rancher-server
           tags: |
             type=ref,event=tag,suffix=-master
+            type=ref,event=release,suffix=-master
             type=raw,value=master,enable=${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
 
       - name: Build and push Main Docker image
