@@ -69,8 +69,8 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/rancher-server
           tags: |
             type=ref,event=tag
-            type=ref,event=release
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ github.event.release.tag_name }},enable=${{ github.event_name == 'release' }}
+            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
 
       - name: Extract metadata for Master Image
         id: meta-master
@@ -79,8 +79,8 @@ jobs:
           images: ghcr.io/${{ github.repository_owner }}/rancher-server
           tags: |
             type=ref,event=tag,suffix=-master
-            type=ref,event=release,suffix=-master
-            type=raw,value=master,enable=${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ github.event.release.tag_name }}-master,enable=${{ github.event_name == 'release' }}
+            type=raw,value=dev-master,enable=${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
 
       - name: Build and push Main Docker image
         uses: docker/build-push-action@v6
@@ -95,11 +95,12 @@ jobs:
       - name: Generate Dockerfile.master
         run: |
           # Use the newly built main image as the base for the master-flavored build
-          # If we pushed to tags, use the tag version, otherwise use 'latest'
-          if [ "${{ github.ref_type }}" = "tag" ]; then
+          if [ "${{ github.event_name }}" = "release" ]; then
+            BASE_TAG="${{ github.event.release.tag_name }}"
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
             BASE_TAG="${{ github.ref_name }}"
           else
-            BASE_TAG="latest"
+            BASE_TAG="dev"
           fi
           cat > server/Dockerfile.master << EOF
           FROM ghcr.io/${{ github.repository_owner }}/rancher-server:${BASE_TAG}
